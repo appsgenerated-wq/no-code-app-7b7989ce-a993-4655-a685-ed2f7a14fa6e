@@ -1,0 +1,48 @@
+name: GorillaHub
+description: A web application for researchers to catalog and track gorillas.
+
+entities:
+  User:
+    authenticable: true
+    properties:
+      - name
+      - { name: email, type: email }
+      - { name: role, type: choice, options: { values: [admin, researcher], default: researcher } }
+    policies:
+      create:
+        - access: admin
+      read:
+        - { access: restricted, allow: User, condition: self }
+      update:
+        - { access: restricted, allow: User, condition: self }
+      delete:
+        - access: admin
+      signup:
+        - access: public
+
+  Gorilla:
+    properties:
+      - { name: name, type: string, options: { required: true } }
+      - { name: species, type: choice, options: { values: ["Western Lowland", "Cross River", "Mountain", "Eastern Lowland"], default: "Western Lowland" } }
+      - { name: bio, type: text }
+      - { name: birthDate, type: date }
+    belongsTo:
+      - { name: owner, entity: User }
+    policies:
+      create:
+        - { access: restricted, allow: User }
+      read:
+        - access: public
+      update:
+        - { access: restricted, allow: User, condition: self }
+      delete:
+        - { access: restricted, allow: User, condition: self }
+
+
+# Health check endpoint for connection testing
+endpoints:
+  health:
+    path: /api/health
+    method: GET
+    policies: []
+    handler: healthCheck
